@@ -20,7 +20,7 @@ A simple script for flashing the ATtiny85 microcontroller using an Arduino as an
 
 ### Pin Diagram
 
-![ATtiny85 and Arduino Connections](Pin Diagram.jpg)
+![ATtiny85 and Arduino Connections](Image/PinDiagram.jpg)
 
 ### Connections Table
 
