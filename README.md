@@ -20,11 +20,11 @@ A simple script for flashing the ATtiny85 microcontroller using an Arduino as an
 
 ### Pin Diagram
 
-![ATtiny85 and Arduino Connections](./Pin Diagram.jpg) 
+![ATtiny85 and Arduino Connections](Pin Diagram.jpg)
 
 ### Connections Table
 
-| ATtiny85/Digispark Pin | Arduino Uno Pin  |
+| ATtiny85/Digispark Pin | Arduino Uno Pin |
 |------------------------|------------------|
 | Pin 0                  | Pin 11           |
 | Pin 1                  | Pin 12           |
