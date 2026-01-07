@@ -1,0 +1,12 @@
+# Requirements for ATtiny85 Bootloader Flasher GUI
+# 
+# Note: tkinter is usually included with Python installations.
+# If tkinter is not available on your system, install it using:
+#
+# Ubuntu/Debian: sudo apt-get install python3-tk
+# Fedora/RHEL:   sudo dnf install python3-tkinter
+# macOS:         tkinter comes with Python from python.org
+# Windows:       tkinter comes with official Python installers
+#
+# No additional pip packages are required for the GUI.
+# All dependencies are part of Python's standard library.
