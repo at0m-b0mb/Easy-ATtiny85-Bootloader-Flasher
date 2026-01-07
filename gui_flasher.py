@@ -14,6 +14,9 @@ import os
 import sys
 import glob
 
+# Constants
+DEFAULT_AVRDUDE_CONF = "/etc/avrdude.conf"
+
 
 class ATtiny85FlasherGUI:
     def __init__(self, root):
@@ -227,18 +230,22 @@ class ATtiny85FlasherGUI:
         
         if self.os_type == "Windows":
             # Windows COM ports
-            for i in range(256):
-                try:
-                    port = f"COM{i}"
-                    # Try to open the port to check if it exists
-                    import serial
-                    s = serial.Serial(port)
-                    s.close()
-                    ports.append(port)
-                except:
-                    pass
+            # Try to use pyserial if available, otherwise list common ports
+            try:
+                import serial
+                for i in range(256):
+                    try:
+                        port = f"COM{i}"
+                        s = serial.Serial(port)
+                        s.close()
+                        ports.append(port)
+                    except (OSError, serial.SerialException):
+                        pass
+            except ImportError:
+                # If serial module not available, just list common ports
+                pass
             
-            # If serial module not available, just list common ports
+            # Fallback: list common ports if none found
             if not ports:
                 ports = [f"COM{i}" for i in range(1, 21)]
         
@@ -298,7 +305,7 @@ class ATtiny85FlasherGUI:
                         return avrdude_path, avrdude_conf
             elif os.path.exists(os.path.join(base_path, "avrdude")):
                 avrdude_path = os.path.join(base_path, "avrdude")
-                avrdude_conf = "/etc/avrdude.conf"
+                avrdude_conf = DEFAULT_AVRDUDE_CONF
                 return avrdude_path, avrdude_conf
         
         # Check PATH
@@ -306,8 +313,8 @@ class ATtiny85FlasherGUI:
             result = subprocess.run(["which", "avrdude"], capture_output=True, text=True)
             if result.returncode == 0:
                 avrdude_path = result.stdout.strip()
-                return avrdude_path, "/etc/avrdude.conf"
-        except:
+                return avrdude_path, DEFAULT_AVRDUDE_CONF
+        except Exception:
             pass
         
         return None, None
@@ -332,7 +339,7 @@ class ATtiny85FlasherGUI:
                         return avrdude_path, avrdude_conf
             elif os.path.exists(os.path.join(base_path, "avrdude")):
                 avrdude_path = os.path.join(base_path, "avrdude")
-                avrdude_conf = "/etc/avrdude.conf"
+                avrdude_conf = DEFAULT_AVRDUDE_CONF
                 return avrdude_path, avrdude_conf
         
         # Check PATH
@@ -340,8 +347,8 @@ class ATtiny85FlasherGUI:
             result = subprocess.run(["which", "avrdude"], capture_output=True, text=True)
             if result.returncode == 0:
                 avrdude_path = result.stdout.strip()
-                return avrdude_path, "/etc/avrdude.conf"
-        except:
+                return avrdude_path, DEFAULT_AVRDUDE_CONF
+        except Exception:
             pass
         
         return None, None

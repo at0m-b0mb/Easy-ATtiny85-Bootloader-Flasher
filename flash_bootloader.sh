@@ -6,6 +6,9 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
+# Constants
+DEFAULT_AVRDUDE_CONF="/etc/avrdude.conf"
+
 # Print banner
 cat << "EOF"
 
@@ -127,7 +130,7 @@ find_avrdude_macos() {
                     # Try to find avrdude.conf
                     local AVRDUDE_CONF="${BASE_PATH/bin/etc}/avrdude.conf"
                     if [ ! -f "$AVRDUDE_CONF" ]; then
-                        AVRDUDE_CONF="/etc/avrdude.conf"
+                        AVRDUDE_CONF="$DEFAULT_AVRDUDE_CONF"
                     fi
                     echo "$AVRDUDE_BIN|$AVRDUDE_CONF"
                     return 0
@@ -139,7 +142,7 @@ find_avrdude_macos() {
     # Check if avrdude is in PATH
     if command -v avrdude &> /dev/null; then
         local AVRDUDE_BIN=$(which avrdude)
-        local AVRDUDE_CONF="/etc/avrdude.conf"
+        local AVRDUDE_CONF="$DEFAULT_AVRDUDE_CONF"
         echo "$AVRDUDE_BIN|$AVRDUDE_CONF"
         return 0
     fi
@@ -177,7 +180,7 @@ find_avrdude_linux() {
                     # Try to find avrdude.conf
                     local AVRDUDE_CONF="${BASE_PATH/bin/etc}/avrdude.conf"
                     if [ ! -f "$AVRDUDE_CONF" ]; then
-                        AVRDUDE_CONF="/etc/avrdude.conf"
+                        AVRDUDE_CONF="$DEFAULT_AVRDUDE_CONF"
                     fi
                     echo "$AVRDUDE_BIN|$AVRDUDE_CONF"
                     return 0
@@ -189,7 +192,7 @@ find_avrdude_linux() {
     # Check if avrdude is in PATH
     if command -v avrdude &> /dev/null; then
         local AVRDUDE_BIN=$(which avrdude)
-        local AVRDUDE_CONF="/etc/avrdude.conf"
+        local AVRDUDE_CONF="$DEFAULT_AVRDUDE_CONF"
         echo "$AVRDUDE_BIN|$AVRDUDE_CONF"
         return 0
     fi
