@@ -314,7 +314,7 @@ class ATtiny85FlasherGUI:
             if result.returncode == 0:
                 avrdude_path = result.stdout.strip()
                 return avrdude_path, DEFAULT_AVRDUDE_CONF
-        except Exception:
+        except (subprocess.SubprocessError, OSError, FileNotFoundError):
             pass
         
         return None, None
@@ -348,7 +348,7 @@ class ATtiny85FlasherGUI:
             if result.returncode == 0:
                 avrdude_path = result.stdout.strip()
                 return avrdude_path, DEFAULT_AVRDUDE_CONF
-        except Exception:
+        except (subprocess.SubprocessError, OSError, FileNotFoundError):
             pass
         
         return None, None
