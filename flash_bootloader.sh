@@ -286,15 +286,16 @@ echo ""
     -U lfuse:w:0xe1:m \
     -U hfuse:w:0xdd:m \
     -U efuse:w:0xfe:m
+EXIT_CODE=$?
 
 # Check exit code
-if [ $? -eq 0 ]; then
+if [ $EXIT_CODE -eq 0 ]; then
     echo ""
     echo -e "${GREEN}[+] SUCCESS! Bootloader flashed successfully.${NC}"
     echo ""
 else
     echo ""
-    echo -e "${RED}[!] ERROR: Flashing failed with error code $?${NC}"
+    echo -e "${RED}[!] ERROR: Flashing failed with error code $EXIT_CODE${NC}"
     echo ""
     echo "Common issues:"
     echo "  - Wrong serial port selected"

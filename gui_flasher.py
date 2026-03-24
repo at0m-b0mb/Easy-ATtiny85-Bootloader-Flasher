@@ -13,6 +13,7 @@ import platform
 import os
 import sys
 import glob
+import queue
 
 # Constants
 DEFAULT_AVRDUDE_CONF = "/etc/avrdude.conf"
@@ -38,8 +39,14 @@ class ATtiny85FlasherGUI:
         
         self.hex_file = os.path.join(self.script_dir, "ATtiny85.hex")
         
+        # Thread-safe log queue: worker threads post (message, tag) tuples here
+        self.log_queue = queue.Queue()
+        
         # Create GUI
         self.create_widgets()
+        
+        # Start polling the log queue on the main thread
+        self._poll_log_queue()
         
         # Auto-detect avrdude and ports
         self.detect_avrdude()
@@ -205,24 +212,33 @@ class ATtiny85FlasherGUI:
         )
         status_bar.grid(row=row, column=0, sticky=(tk.W, tk.E))
     
-    def log(self, message, tag=None):
-        """Log message to console"""
+    def _poll_log_queue(self):
+        """Drain the log queue and write messages to the console (main-thread only)."""
+        try:
+            while True:
+                message, tag = self.log_queue.get_nowait()
+                self._write_log(message, tag)
+        except queue.Empty:
+            pass
+        self.root.after(50, self._poll_log_queue)
+
+    def _write_log(self, message, tag=None):
+        """Write a message directly to the console widget (must be called on main thread)."""
         self.console.config(state=tk.NORMAL)
         self.console.insert(tk.END, message + "\n")
         if tag:
-            # Configure tag colors
             self.console.tag_config("error", foreground="red")
             self.console.tag_config("success", foreground="green")
             self.console.tag_config("info", foreground="blue")
-            
-            # Apply tag to last line
             line_start = self.console.index("end-2c linestart")
             line_end = self.console.index("end-1c")
             self.console.tag_add(tag, line_start, line_end)
-        
         self.console.see(tk.END)
         self.console.config(state=tk.DISABLED)
-        self.root.update_idletasks()
+
+    def log(self, message, tag=None):
+        """Log message to console (thread-safe: safe to call from any thread)."""
+        self.log_queue.put((message, tag))
     
     def get_serial_ports(self):
         """Get list of available serial ports based on OS"""
@@ -463,8 +479,8 @@ class ATtiny85FlasherGUI:
             
             if process.returncode == 0:
                 self.log("[+] SUCCESS! Bootloader flashed successfully!", "success")
-                self.status_var.set("Flash completed successfully!")
-                messagebox.showinfo("Success", "Bootloader flashed successfully!")
+                self.root.after(0, lambda: self.status_var.set("Flash completed successfully!"))
+                self.root.after(0, lambda: messagebox.showinfo("Success", "Bootloader flashed successfully!"))
             else:
                 self.log(f"[!] ERROR: Flashing failed with error code {process.returncode}", "error")
                 self.log("[!] Common issues:", "error")
@@ -472,15 +488,17 @@ class ATtiny85FlasherGUI:
                 self.log("    - Arduino not running ArduinoISP sketch")
                 self.log("    - Incorrect wiring between Arduino and ATtiny85")
                 self.log("    - Insufficient permissions (try running as admin/sudo)")
-                self.status_var.set("Flash failed!")
-                messagebox.showerror("Error", f"Flashing failed with error code {process.returncode}")
+                rc = process.returncode  # capture value now; lambda would see a stale reference otherwise
+                self.root.after(0, lambda: self.status_var.set("Flash failed!"))
+                self.root.after(0, lambda: messagebox.showerror("Error", f"Flashing failed with error code {rc}"))
             
             self.log("=" * 80)
             
         except Exception as e:
             self.log(f"[!] Exception occurred: {str(e)}", "error")
-            self.status_var.set("Error occurred!")
-            messagebox.showerror("Error", f"An error occurred: {str(e)}")
+            err_msg = str(e)  # capture value now; `e` may not be accessible inside the lambda
+            self.root.after(0, lambda: self.status_var.set("Error occurred!"))
+            self.root.after(0, lambda: messagebox.showerror("Error", f"An error occurred: {err_msg}"))
         
         finally:
             # Re-enable flash button
